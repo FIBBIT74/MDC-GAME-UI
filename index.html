@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>MDC GAME</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{--mdc:#ff6b00;--geo:#00d4aa;--rcwt:#cc44ff;--rcwe:#ff44cc;--bg:#030303;--bg2:#0a0a0a;--line:#1e1e1e;--muted:#666;--safe-b:env(safe-area-inset-bottom,0px);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:#fff;}
+body{display:flex;flex-direction:column;font-family:'Share Tech Mono',monospace;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);}
+#hdr{flex-shrink:0;height:62px;background:linear-gradient(180deg,#0a0a0a,#050505);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:relative;}
+#hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#ff6b0055,transparent);}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 16px;}
+#bnav{flex-shrink:0;background:#050505;border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe-b);height:calc(62px + var(--safe-b));}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;border-top:2px solid transparent;cursor:pointer;}
+.ni{font-size:22px;line-height:1;transition:transform 0.2s;}
+.nb.active .ni{transform:scale(1.15);}
+.nl{font-size:10px;font-family:'Orbitron',monospace;font-weight:700;letter-spacing:1px;}
+#notif{position:fixed;top:72px;left:14px;right:14px;z-index:9997;background:#0d0d0d;border-radius:12px;padding:12px 18px;font-size:13px;text-align:center;display:none;animation:ntfIn 0.3s ease;}
+#modal{position:fixed;inset:0;z-index:9990;background:#000000cc;display:none;align-items:flex-end;backdrop-filter:blur(4px);}
+#mbox{background:linear-gradient(180deg,#0f0f0f,#080808);border:1px solid #1e1e1e;border-radius:24px 24px 0 0;padding:24px 18px 44px;width:100%;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:sheetUp 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+#mbox::before{content:'';display:block;width:36px;height:4px;background:#333;border-radius:2px;margin:0 auto 20px;}
+#bov{position:fixed;inset:0;z-index:9995;display:none;flex-direction:column;align-items:center;justify-content:center;background:#000;overflow-y:auto;}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;transition:transform 0.15s,opacity 0.15s;}
+.card:active{transform:scale(0.97);opacity:0.85;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.sbox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 10px;text-align:center;}
+.hpbg{height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden;}
+.hpfill{height:100%;border-radius:3px;transition:width 0.6s;}
+.bp{width:100%;padding:15px;border:none;border-radius:14px;font-family:'Orbitron',monospace;font-weight:900;font-size:13px;letter-spacing:3px;cursor:pointer;transition:all 0.2s;}
+.bp:active{transform:scale(0.97);}
+.bs{padding:9px 14px;border-radius:10px;font-family:'Orbitron',monospace;font-weight:700;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
+.bs:active{transform:scale(0.95);}
+.stitle{font-size:9px;color:var(--muted);letter-spacing:4px;margin-bottom:12px;font-family:'Orbitron',monospace;}
+.gtitle{font-size:24px;font-weight:900;letter-spacing:5px;font-family:'Orbitron',monospace;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:6px;}
+.mcard{border-radius:16px;padding:16px 12px;position:relative;overflow:hidden;margin-bottom:12px;transition:transform 0.2s;}
+.mcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.05),transparent 60%);pointer-events:none;}
+.hex{border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;border:1px solid transparent;}
+.hex:active{transform:scale(0.9);}
+.pring{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;position:relative;flex-shrink:0;}
+.pring::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(#ff6b00 0% 65%,#1a1a1a 65% 100%);animation:ringRot 3s linear infinite;}
+.pring::after{content:'';position:absolute;inset:-1px;border-radius:50%;background:#080808;}
+.pring span{position:relative;z-index:1;}
+.xpbar{height:8px;background:#111;border-radius:4px;overflow:hidden;margin:6px 0;}
+.xpfill{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff6b00,#ffcc00);position:relative;overflow:hidden;}
+.xpfill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:xpShim 1.5s infinite;}
+.bcard{width:100px;height:130px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;border:2px solid transparent;}
+.atk{animation:atkAnim 0.4s ease;}
+.hit{animation:hitAnim 0.3s ease;}
+.vs{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:#ff4488;text-shadow:0 0 20px #ff4488;}
+.particle{position:absolute;width:6px;height:6px;border-radius:50%;animation:pflyAnim 0.8s ease-out forwards;pointer-events:none;}
+.win-bg{background:radial-gradient(ellipse at center,#0a2a0a 0%,#030303 70%);}
+.loss-bg{background:radial-gradient(ellipse at center,#2a0a0a 0%,#030303 70%);}
+.tc{animation:tcAnim 0.3s ease;}
+@keyframes ntfIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sheetUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tcAnim{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.97)}}
+@keyframes ringRot{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes xpShim{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+@keyframes atkAnim{0%{transform:translateX(0)}30%{transform:translateX(38px) scale(1.05)}60%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+@keyframes hitAnim{0%{transform:translateX(0)}20%{transform:translateX(-14px)}40%{transform:translateX(7px) scale(0.95)}100%{transform:translateX(0)}}
+@keyframes pflyAnim{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0)}}
+@keyframes trophyBounce{0%{transform:scale(0) rotate(-10deg)}60%{transform:scale(1.2) rotate(5deg)}80%{transform:scale(0.95) rotate(-2deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes textReveal{from{opacity:0;transform:translateY(20px) scale(0.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes skullShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+@keyframes confFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(110px) rotate(360deg);opacity:0}}
+@keyframes hexPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#ff6b0055;border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="notif"></div>
+<div id="modal" onclick="cModal()"><div id="mbox" onclick="event.stopPropagation()"></div></div>
+<div id="bov"></div>
+
+<header id="hdr">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:24px;filter:drop-shadow(0 0 10px #ff6b00);animation:pulse 2s infinite;">🪐</span>
+    <div>
+      <div style="font-family:'Orbitron',monospace;font-weight:900;font-size:15px;letter-spacing:5px;background:linear-gradient(90deg,#ff6b00,#ffcc00,#ff4488);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">MDC GAME</div>
+      <div style="font-size:8px;color:#222;letter-spacing:3px;">MEME DOMINATION CLASH</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div id="hbal" style="display:none;"></div>
+    <button id="wbtn" onclick="conn()" style="background:linear-gradient(135deg,#ff6b00,#cc4400);border:none;border-radius:10px;color:#fff;font-family:'Orbitron',monospace;font-weight:700;font-size:9px;padding:8px 14px;cursor:pointer;letter-spacing:2px;box-shadow:0 0 15px #ff6b0044;">CONNECT</button>
+  </div>
+</header>
+
+<div id="content"></div>
+
+<nav id="bnav">
+  <button class="nb active" id="nb-arena"    onclick="go('arena')"><span class="ni">⚔️</span><span class="nl" id="nl-arena"    style="color:#ff4488;">ARENA</span></button>
+  <button class="nb"        id="nb-kingdoms" onclick="go('kingdoms')"><span class="ni">🌍</span><span class="nl" id="nl-kingdoms" style="color:var(--muted)">ZONES</span></button>
+  <button class="nb"        id="nb-cards"    onclick="go('cards')"><span class="ni">🃏</span><span class="nl" id="nl-cards"    style="color:var(--muted)">CARDS</span></button>
+  <button class="nb"        id="nb-reiki"    onclick="go('reiki')"><span class="ni">🔮</span><span class="nl" id="nl-reiki"    style="color:var(--muted)">REIKI</span></button>
+  <button class="nb"        id="nb-profile"  onclick="go('profile')"><span class="ni">👤</span><span class="nl" id="nl-profile"  style="color:var(--muted)">PROFILE</span></button>
+</nav>
+
+<script>
+const TK={MDC:{n:"Mars Doge Coin",s:"MDC",e:"🪐",c:"#ff6b00",ton:"EQD0XlSVWyIxFO81-dvYf5_xIEQYv-guhKPy5We29MdN4VVE",sol:"Dxo3SrhHsLrHGc95684qY4q3h9tCzeRs5ZZoXjLGpump"},GEO:{n:"GEO",s:"GEO",e:"🌍",c:"#00d4aa",ton:"EQAOMjpg9DkDm92nTZmHMFe9hyudMo-K5B_Q0CkSjMrhXoha"},RCW_T:{n:"ReikiCoinWizard",s:"RCW",e:"🔮",c:"#cc44ff",ton:"EQBBDOdTYxa94saidJF0LNkqd-Boymd2HFhWlq-DUazD8t7p"},RCW_E:{n:"ReikiCoinWizard",s:"RCW",e:"🧙",c:"#ff44cc",eth:"0x4Aa25E0Ed382Df503C4d3fE3A82CC428bFe79FAD"}};
+const M=[{n:"Gigachad",e:"💪",c:"#00ff88",bg:"#00ff8811",d:"Непобедимый"},{n:"Wojak",e:"😔",c:"#4488ff",bg:"#4488ff11",d:"Страдалец"},{n:"Pepe",e:"🐸",c:"#44ee44",bg:"#44ee4411",d:"Хитрец"},{n:"Doge",e:"🐕",c:"#ffcc00",bg:"#ffcc0011",d:"Верный"},{n:"NPC",e:"🤖",c:"#888",bg:"#88888811",d:"Скриптовый"},{n:"Sigma",e:"😎",c:"#ff4488",bg:"#ff448811",d:"Одиночка"}];
+const RR=[{n:"Common",c:"#777"},{n:"Rare",c:"#4488ff"},{n:"Epic",c:"#cc44ff"},{n:"Legendary",c:"#ffaa00"}];
+const ZT=[{n:"Mars Desert",e:"🏜",c:"#ff8844",i:10},{n:"Doge Valley",e:"🌿",c:"#44cc77",i:15},{n:"Pepe Swamp",e:"🐸",c:"#33bb44",i:20},{n:"Gigachad Peak",e:"⛰",c:"#ffcc00",i:25},{n:"Sigma Citadel",e:"🏰",c:"#aa44ff",i:30},{n:"Moon Base",e:"🌙",c:"#4488ff",i:40}];
+let wallet=null,tab="arena";
+const bal={MDC:4200,GEO:1800,RCW_T:380,RCW_E:120};
+const PS={name:"FIBBIT74",level:13,xp:7840,xpNext:10000,wins:13,losses:7,rank:247,mdcEarned:2140,streak:3,avatar:"🪐",title:"Meme Warrior"};
+const cards=[{id:0,m:0,r:1,lv:7,pw:65,hp:85,dk:8,wiz:false},{id:1,m:2,r:2,lv:11,pw:72,hp:60,dk:9,wiz:false},{id:2,m:3,r:0,lv:3,pw:34,hp:100,dk:5,wiz:false},{id:3,m:5,r:3,lv:15,pw:88,hp:45,dk:10,wiz:false},{id:4,m:1,r:1,lv:6,pw:48,hp:100,dk:6,wiz:false},{id:5,m:4,r:2,lv:9,pw:61,hp:30,dk:7,wiz:true}];
+const op=[null,null,"Pepe","Doge",null,"Sigma",null,"Giga",null,null,"YOU",null,"Wojak",null,null,null];
+const zones=Array.from({length:24},(_,i)=>({id:i,t:i%6,tier:i<3?3:i<10?2:1,owner:op[i%op.length],price:200+(i%5)*150,income:ZT[i%6].i}));
+const CH=[{p:"0xPepe…6969",cards:[2,0,5],stake:50,w:12,l:5,rank:312},{p:"0xGiga…420",cards:[0,3,5],stake:100,w:8,l:3,rank:156},{p:"0xDoge…777",cards:[3,1,2],stake:25,w:20,l:10,rank:489},{p:"0xSigma…1337",cards:[5,0,2],stake:250,w:5,l:2,rank:88},{p:"0xWojak…404",cards:[1,4,3],stake:75,w:7,l:8,rank:403}];
+
+function notif(msg,color="#00ff88"){const n=document.getElementById("notif");n.textContent=msg;n.style.display="block";n.style.border=`1px solid ${color}44`;n.style.color=color;n.style.boxShadow=`0 0 24px ${color}44`;clearTimeout(n._t);n._t=setTimeout(()=>n.style.display="none",3000);}
+function cp(a){navigator.clipboard&&navigator.clipboard.writeText(a);notif("📋 Скопировано!");}
+function oModal(h){document.getElementById("mbox").innerHTML=h;document.getElementById("modal").style.display="flex";}
+function cModal(){document.getElementById("modal").style.display="none";}
+function conn(){if(wallet)return;wallet="ok";const b=document.getElementById("wbtn");b.textContent="✓ "+PS.name;b.style.background="linear-gradient(135deg,#0a1a0a,#051205)";b.style.border="1px solid #00ff8833";b.style.color="#00ff88";b.style.boxShadow="0 0 10px #00ff8822";document.getElementById("hbal").style.display="block";document.getElementById("hbal").innerHTML=`<div style="background:#0a0a0a;border:1px solid #ff6b0033;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:4px;"><span style="font-size:12px;">🪐</span><span style="color:#ff6b00;font-size:12px;font-weight:700;">${bal.MDC.toLocaleString()}</span></div>`;notif("✅ Кошелёк подключён! 🪐","#ff6b00");}
+
+const NC={arena:"#ff4488",kingdoms:"#00d4aa",cards:"#4488ff",reiki:"#cc44ff",profile:"#ffcc00"};
+function go(t){tab=t;Object.keys(NC).forEach(k=>{const b=document.getElementById("nb-"+k);const l=document.getElementById("nl-"+k);if(!b||!l)return;b.classList.toggle("active",k===t);l.style.color=k===t?NC[k]:"var(--muted)";b.style.borderTop=k===t?`2px solid ${NC[k]}`:"2px solid transparent";});render();document.getElementById("content").scrollTop=0;}
+
+// ARENA
+function rArena(){
+  const wr=Math.round(PS.wins/(PS.wins+PS.losses)*100);
+  return `<div class="tc">
+    <div style="margin-bottom:20px;"><div class="gtitle" style="background:linear-gradient(90deg,#ff4488,#cc44ff,#ff6b00);">⚔ ARENA</div><div style="color:var(--muted);font-size:10px;letter-spacing:3px;font-family:'Orbitron',monospace;">MEME BATTLE GROUND</div></div>
+    <div class="sgrid">
+      <div class="sbox" style="border-color:#ff448822;"><div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">БОЁВ</div><div style="font-size:22px;font-weight:900;color:#ff4488;font-family:'Orbitron',monospace;">247</div></div>
+      <div class="sbox" style="border-color:#ffcc0022;"><div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;">MDC В ПУЛЕ</div><div style="font-size:22px;font-weight:900;color:#ffcc00;font-family:'Orbitron',monospace;">84K</div></div>
+      <div class="sbox" style="border-color:#00ff8822;"><div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">РЕЙТИНГ</div><div style="font-size:18px;font-weight:900;color:#00ff88;font-family:'Orbitron',monospace;">${PS.wins}W ${PS.losses}L</div><div style="font-size:10px;color:#00ff8888;">WIN ${wr}%</div></div>
+      <div class="sbox" style="border-color:#4488ff22;"><div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:4px;">🔥 STREAK</div><div style="font-size:22px;font-weight:900;color:#4488ff;font-family:'Orbitron',monospace;">${PS.streak}W</div><div style="font-size:10px;color:#4488ff88;">подряд</div></div>
+    </div>
+    <div class="stitle">🏆 МЕМЫ АРЕНЫ</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;">
+      ${M.map(m=>`<div style="flex-shrink:0;background:${m.bg};border:1px solid ${m.c}33;border-radius:12px;padding:10px;text-align:center;min-width:60px;"><div style="font-size:24px;margin-bottom:3px;">${m.e}</div><div style="font-size:9px;color:${m.c};font-weight:700;">${m.n}</div><div style="font-size:8px;color:var(--muted);margin-top:1px;">${m.d}</div></div>`).join("")}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="stitle" style="margin:0;">⚔ ВЫЗОВЫ</div><button class="bs" onclick="notif('⚔ Создаём вызов...','#ff6b00')" style="background:linear-gradient(135deg,#ff4488,#cc0055);border:none;color:#fff;">+ БОЙ</button></div>
+    ${CH.map((c,i)=>`
+    <div class="card" onclick="oBattle(${i})" style="background:linear-gradient(135deg,#0d0d0d,#080808);padding:14px 12px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-size:26px;filter:drop-shadow(0 0 8px #ff448866);">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+            <span style="color:#888;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.p}</span>
+            <span style="background:#ff488811;border:1px solid #ff448833;border-radius:4px;font-size:8px;color:#ff4488;padding:1px 5px;flex-shrink:0;">#${c.rank}</span>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:4px;">${c.cards.map(ci=>`<span style="font-size:22px;filter:drop-shadow(0 0 6px ${M[ci].c});">${M[ci].e}</span>`).join("")}</div>
+          <div style="color:var(--muted);font-size:10px;">${c.w}W / ${c.l}L · ${Math.round(c.w/(c.w+c.l)*100)}%</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="color:#ffcc00;font-weight:900;font-size:20px;font-family:'Orbitron',monospace;text-shadow:0 0 10px #ffcc0066;">${c.stake}</div>
+          <div style="color:var(--muted);font-size:9px;margin-bottom:6px;">MDC</div>
+          <div style="background:linear-gradient(135deg,#ff4488,#cc0055);border-radius:8px;color:#fff;font-size:10px;font-weight:700;padding:6px 12px;font-family:'Orbitron',monospace;box-shadow:0 0 12px #ff448844;">FIGHT</div>
+        </div>
+      </div>
+    </div>`).join("")}
+  </div>`;
+}
+
+function oBattle(i){
+  if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}
+  const c=CH[i];
+  oModal(`<div style="text-align:center;">
+    <div style="font-size:11px;color:var(--muted);letter-spacing:3px;margin-bottom:16px;font-family:'Orbitron',monospace;">BATTLE PREVIEW</div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:20px;">
+      <div><div style="font-size:10px;color:#00ff88;margin-bottom:8px;font-family:'Orbitron',monospace;">ВЫ</div>${cards.slice(0,3).map(x=>`<div style="font-size:32px;line-height:1.4;filter:drop-shadow(0 0 8px ${M[x.m].c});">${M[x.m].e}</div>`).join("")}</div>
+      <div><div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#ff4488;text-shadow:0 0 20px #ff4488;">VS</div><div style="margin-top:8px;color:#ffcc00;font-size:14px;font-family:'Orbitron',monospace;font-weight:700;">${c.stake}<br><span style="font-size:10px;">MDC</span></div></div>
+      <div><div style="font-size:10px;color:#ff4488;margin-bottom:8px;font-family:'Orbitron',monospace;">${c.p.split("…")[0]}</div>${c.cards.map(ci=>`<div style="font-size:32px;line-height:1.4;filter:drop-shadow(0 0 8px ${M[ci].c});">${M[ci].e}</div>`).join("")}</div>
+    </div>
+    <button class="bp" onclick="runB(${i})" style="background:linear-gradient(135deg,#ff4488,#cc0055);color:#fff;box-shadow:0 0 25px #ff448855;">⚔ НАЧАТЬ БОЙ</button>
+    <button onclick="cModal()" style="display:block;width:100%;margin-top:10px;background:none;border:none;color:var(--muted);font-family:'Orbitron',monospace;font-size:10px;cursor:pointer;padding:8px;">ОТМЕНА</button>
+  </div>`);
+}
+
+function runB(i){
+  cModal();
+  const c=CH[i];const won=Math.random()>0.42;const mw=won?2:1;
+  const ov=document.getElementById("bov");ov.style.display="flex";
+  const rds=[0,1,2].map(j=>({me:M[cards[j].m],en:M[c.cards[j]],myDmg:Math.floor(30+Math.random()*50),enDmg:Math.floor(25+Math.random()*45),win:j<mw}));
+  let step=0;
+
+  function showRd(){
+    if(step>=3){showRes();return;}
+    const r=rds[step];const s=step;step++;
+    ov.className="";ov.style.background="#000";
+    ov.innerHTML=`<div style="width:100%;padding:24px 20px;text-align:center;">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:4px;margin-bottom:6px;font-family:'Orbitron',monospace;">РАУНД ${s+1} / 3</div>
+      <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:24px;">
+        <div class="bcard ${r.win?"atk":""}" style="background:${r.me.bg};border-color:${r.me.c}66;box-shadow:${r.win?"0 0 30px "+r.me.c+"66":"none"};">
+          <div style="font-size:50px;filter:drop-shadow(0 0 12px ${r.me.c});">${r.me.e}</div>
+          <div style="font-size:9px;color:${r.me.c};margin-top:6px;font-weight:700;">${r.me.n}</div>
+        </div>
+        <div style="text-align:center;"><div class="vs" style="margin-bottom:8px;">VS</div><div style="color:${r.win?"#00ff88":"#ff4444"};font-size:20px;font-weight:900;font-family:'Orbitron',monospace;text-shadow:0 0 15px ${r.win?"#00ff88":"#ff4444"};">${r.win?"WIN":"LOSS"}</div></div>
+        <div class="bcard ${!r.win?"atk":"hit"}" style="background:${r.en.bg};border-color:${r.en.c}66;box-shadow:${!r.win?"0 0 30px "+r.en.c+"66":"none"};">
+          <div style="font-size:50px;filter:drop-shadow(0 0 12px ${r.en.c});">${r.en.e}</div>
+          <div style="font-size:9px;color:${r.en.c};margin-top:6px;font-weight:700;">${r.en.n}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
+        ${[0,1,2].map(j=>`<div style="width:36px;height:6px;border-radius:3px;background:${j<s+1?(rds[j].win?"#00ff88":"#ff4444"):"#1e1e1e"};box-shadow:${j<s+1?(rds[j].win?"0 0 8px #00ff88":"0 0 8px #ff4444"):"none"};"></div>`).join("")}
+      </div>
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:24px;">
+        <div style="background:#0a0a0a;border:1px solid ${r.win?"#00ff8833":"#1e1e1e"};border-radius:8px;padding:8px 16px;text-align:center;"><div style="color:var(--muted);font-size:9px;margin-bottom:3px;">ВАШ УРОН</div><div style="color:${r.win?"#00ff88":"#fff"};font-weight:700;font-family:'Orbitron',monospace;">${r.myDmg}</div></div>
+        <div style="background:#0a0a0a;border:1px solid ${!r.win?"#ff444433":"#1e1e1e"};border-radius:8px;padding:8px 16px;text-align:center;"><div style="color:var(--muted);font-size:9px;margin-bottom:3px;">УРОН ВРАГА</div><div style="color:${!r.win?"#ff4444":"#fff"};font-weight:700;font-family:'Orbitron',monospace;">${r.enDmg}</div></div>
+      </div>
+      <button class="bp" onclick="showRd()" style="background:linear-gradient(135deg,#1e1e1e,#0a0a0a);color:#fff;border:1px solid #2a2a2a;font-size:12px;">${s<2?"СЛЕДУЮЩИЙ РАУНД →":"ФИНАЛ →"}</button>
+    </div>`;
+    spawnP(r.win?"#00ff88":"#ff4444");
+  }
+
+  function showRes(){
+    const reward=Math.floor(c.stake*1.9);
+    ov.className=won?"win-bg":"loss-bg";
+    ov.innerHTML=`<div style="width:100%;padding:28px 20px;text-align:center;animation:fadein 0.5s ease;">
+      ${won?confetti():""}
+      <div style="font-size:76px;margin-bottom:10px;animation:${won?"trophyBounce":"skullShake"} 0.8s ease;">${won?"🏆":"💀"}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:${won?"#00ff88":"#ff4444"};letter-spacing:4px;text-shadow:0 0 30px ${won?"#00ff88":"#ff4444"};animation:textReveal 0.6s ease 0.3s both;margin-bottom:8px;">${won?"ПОБЕДА!":"ПОРАЖЕНИЕ"}</div>
+      <div style="font-size:16px;color:${won?"#00aa55":"#aa0000"};margin-bottom:6px;font-family:'Orbitron',monospace;animation:textReveal 0.6s ease 0.5s both;">${won?"+"+reward+" MDC":"-"+c.stake+" MDC"}</div>
+      ${won?`<div style="font-size:11px;color:#ffcc0088;margin-bottom:18px;animation:textReveal 0.6s ease 0.7s both;">🔥 Серия ${PS.streak+1} побед!</div>`:`<div style="font-size:11px;color:#cc44ff88;margin-bottom:18px;">💊 Лечи карты за RCW TON</div>`}
+      <div style="background:#0a0a0a;border:1px solid #1e1e1e;border-radius:14px;padding:14px;margin-bottom:20px;animation:slideUp 0.5s ease 0.4s both;">
+        ${rds.map((r,j)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${j<2?"border-bottom:1px solid #111;":""}"><span style="font-size:20px;">${r.me.e}</span><div style="text-align:center;"><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Раунд ${j+1}</div><div style="font-size:12px;font-weight:700;color:${r.win?"#00ff88":"#ff4444"};font-family:'Orbitron',monospace;">${r.win?"WIN":"LOSS"}</div></div><span style="font-size:20px;">${r.en.e}</span></div>`).join("")}
+      </div>
+      <button class="bp" onclick="closeB()" style="background:${won?"linear-gradient(135deg,#00ff88,#00aa55)":"linear-gradient(135deg,#333,#1a1a1a)"};color:${won?"#000":"#fff"};font-size:13px;box-shadow:${won?"0 0 25px #00ff8844":"none"};">ЗАКРЫТЬ</button>
+    </div>`;
+  }
+  setTimeout(showRd,300);
+}
+
+function spawnP(color){const ov=document.getElementById("bov");for(let i=0;i<10;i++){const p=document.createElement("div");p.className="particle";p.style.cssText=`background:${color};left:${30+Math.random()*40}%;top:${20+Math.random()*60}%;--px:${(Math.random()-0.5)*70}px;--py:${(Math.random()-0.5)*70}px;animation-delay:${Math.random()*0.3}s;`;ov.appendChild(p);setTimeout(()=>p.remove(),1100);}}
+
+function confetti(){return Array.from({length:18},(_,i)=>`<div style="position:absolute;width:8px;height:8px;border-radius:2px;background:${["#ff6b00","#ffcc00","#00ff88","#4488ff","#ff4488","#cc44ff"][i%6]};left:${Math.random()*100}%;top:-10px;animation:confFall ${0.8+Math.random()*1.2}s ease ${Math.random()*0.5}s forwards;transform:rotate(${Math.random()*360}deg);"></div>`).join("");}
+function closeB(){const ov=document.getElementById("bov");ov.style.display="none";ov.className="";ov.innerHTML="";}
+
+// KINGDOMS
+function rKingdoms(){
+  const myZ=zones.filter(z=>z.owner==="YOU");
+  const tc=["","#777","#4488ff","#ffaa00"];
+  return `<div class="tc">
+    <div style="margin-bottom:18px;"><div class="gtitle" style="background:linear-gradient(90deg,#00d4aa,#4488ff);">🌍 KINGDOMS</div><div style="color:var(--muted);font-size:10px;letter-spacing:3px;font-family:'Orbitron',monospace;">CAPTURE · EARN · DOMINATE</div></div>
+    <div class="sgrid">
+      ${[["МОИ ЗОНЫ",myZ.length+"/24","#00d4aa"],["MDC/ДЕНЬ","60","#ff6b00"],["СВОБОДНЫХ",zones.filter(z=>!z.owner).length,"#ffcc00"],["GEO",bal.GEO.toLocaleString(),"#00d4aa"]].map(([l,v,c])=>`<div class="sbox" style="border-color:${c}22;"><div style="font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:5px;">${l}</div><div style="font-size:20px;font-weight:900;color:${c};font-family:'Orbitron',monospace;text-shadow:0 0 10px ${c}44;">${v}</div></div>`).join("")}
+    </div>
+    <div style="background:linear-gradient(135deg,#0a1a0a,#050f05);border:1px solid #00ff8833;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 0 20px #00ff8811;">
+      <div><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><div style="width:8px;height:8px;border-radius:50%;background:#00ff88;box-shadow:0 0 8px #00ff88;animation:pulse 1.5s infinite;"></div><span style="color:#00ff88;font-weight:900;font-size:20px;font-family:'Orbitron',monospace;">24.7 MDC</span></div><div style="color:#444;font-size:10px;">накоплено · готово к получению</div></div>
+      <button class="bs" onclick="notif('✅ 24.7 MDC получено! 🪐','#00ff88')" style="background:linear-gradient(135deg,#00ff88,#00aa55);border:none;color:#000;font-weight:900;box-shadow:0 0 15px #00ff8844;">CLAIM</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">${ZT.map(z=>`<div style="flex-shrink:0;background:${z.c}11;border:1px solid ${z.c}33;border-radius:8px;padding:5px 8px;display:flex;align-items:center;gap:4px;"><span style="font-size:12px;">${z.e}</span><span style="font-size:9px;color:${z.c};font-weight:700;">+${z.i}</span></div>`).join("")}</div>
+    <div class="stitle">КАРТА ТЕРРИТОРИЙ</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+      ${zones.slice(0,24).map(z=>{
+        const zt=ZT[z.t];const isMe=z.owner==="YOU";const isFr=!z.owner;
+        return `<div class="hex" onclick="capZ(${z.id},${z.price},'${z.owner||""}','${zt.n}')" style="background:${isMe?"linear-gradient(135deg,"+zt.c+"22,"+zt.c+"08)":isFr?"#0d0d0d":"#080808"};border-color:${isMe?zt.c+"66":isFr?"#1e1e1e22":"#1e1e1e"};box-shadow:${isMe?"0 0 16px "+zt.c+"22":"none"};animation:${isMe?"hexPulse 3s infinite":"none"};">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:8px;color:${tc[z.tier]};font-weight:700;">${["","","R","★"][z.tier]}</span><span style="font-size:16px;">${zt.e}</span></div>
+          <div style="font-size:9px;color:${zt.c};font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${zt.n.split(" ")[0]}</div>
+          <div style="font-size:9px;color:#ff6b00;font-weight:700;">+${z.income}/д</div>
+          <div style="font-size:8px;color:${isMe?"#00ff88":isFr?"#555":"#444"};margin-top:1px;">${isMe?"✓МОЯ":isFr?"FREE":z.owner.substring(0,6)}</div>
+          <div style="margin-top:3px;font-size:8px;color:#00d4aa;font-weight:700;">${z.price}G</div>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+function capZ(id,price,owner,name){if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}if(!owner)notif(`🌍 ${name} захвачена! -${price} GEO`,"#00d4aa");else notif(`⚔ Атака ${name}! -${Math.floor(price*1.5)} GEO`,"#ff4488");}
+
+// CARDS
+function rCards(){
+  return `<div class="tc">
+    <div style="margin-bottom:18px;"><div class="gtitle" style="background:linear-gradient(90deg,#4488ff,#cc44ff);">🃏 МОИ КАРТЫ</div><div style="color:var(--muted);font-size:10px;letter-spacing:3px;font-family:'Orbitron',monospace;">HEAL · BOOST · BATTLE</div></div>
+    ${cards.map(c=>{
+      const mt=M[c.m],r=RR[c.r];const hc=c.hp>60?"#00ff88":c.hp>30?"#ffcc00":"#ff4444";const ep=Math.floor(c.pw*(c.hp/100));
+      return `<div class="mcard" style="background:linear-gradient(135deg,${mt.c}10,#080808 60%);border:${c.r===3?"2px":"1px"} solid ${c.r===3?r.c+"88":r.c+"33"};box-shadow:${c.r===3?"0 0 25px "+r.c+"33":c.wiz?"0 0 20px #ff44cc22":"none"};">
+        ${c.wiz?`<div style="position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#ff44cc,#cc0088);border-radius:6px;font-size:8px;color:#fff;padding:3px 8px;font-weight:700;font-family:'Orbitron',monospace;letter-spacing:1px;box-shadow:0 0 10px #ff44cc66;">WIZARD</div>`:""}
+        ${c.r===3?`<div style="position:absolute;top:10px;left:10px;font-size:8px;color:#ffaa00;font-weight:700;font-family:'Orbitron',monospace;">★ LEGEND</div>`:""}
+        <div style="display:flex;align-items:center;gap:14px;padding:${c.wiz||c.r===3?"22px 0 0":0};">
+          <div style="flex-shrink:0;width:80px;height:95px;border-radius:12px;background:linear-gradient(135deg,${mt.c}22,${mt.c}08);border:1px solid ${mt.c}33;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 20px ${mt.c}11;">
+            <div style="font-size:42px;filter:drop-shadow(0 0 12px ${mt.c});">${mt.e}</div>
+            <div style="font-size:8px;color:${mt.c};font-weight:700;margin-top:4px;font-family:'Orbitron',monospace;">${mt.n.toUpperCase()}</div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="color:${r.c};font-size:10px;font-weight:700;font-family:'Orbitron',monospace;">${r.n.toUpperCase()}</span><span style="color:var(--muted);font-size:10px;">Lv.${c.lv}</span></div>
+            <div style="margin-bottom:5px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:9px;color:var(--muted);">⚔ POWER</span><span style="font-size:10px;color:#fff;font-weight:700;font-family:'Orbitron',monospace;">${ep}</span></div><div class="hpbg"><div class="hpfill" style="width:${ep}%;background:linear-gradient(90deg,#ff6b00,#ffcc00);"></div></div></div>
+            <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:9px;color:var(--muted);">❤ HP</span><span style="font-size:10px;color:${hc};font-weight:700;font-family:'Orbitron',monospace;">${c.hp}%</span></div><div class="hpbg"><div class="hpfill" style="width:${c.hp}%;background:${hc};box-shadow:0 0 8px ${hc}44;"></div></div></div>
+            <div style="display:flex;gap:3px;margin-bottom:8px;"><span style="font-size:9px;color:var(--muted);margin-right:3px;">DANK</span>${Array.from({length:10},(_,di)=>`<div style="width:8px;height:8px;border-radius:2px;background:${di<c.dk?"#ffcc00":"#1a1a1a"};box-shadow:${di<c.dk?"0 0 4px #ffcc0088":"none"};"></div>`).join("")}</div>
+            <div style="display:flex;gap:6px;">
+              ${c.hp<100?`<button class="bs" onclick="healC(${c.id})" style="background:linear-gradient(135deg,#1a0033,#0d0d0d);border:1px solid #cc44ff44;color:#cc44ff;flex:1;font-size:9px;padding:7px 4px;">🔮 HEAL<br><span style="font-size:8px;color:#660099;">5 RCW</span></button>`:""}
+              <button class="bs" onclick="boostC(${c.id})" style="background:linear-gradient(135deg,#33001a,#0d0d0d);border:1px solid #ff44cc44;color:#ff44cc;flex:1;font-size:9px;padding:7px 4px;">💥 BLAST<br><span style="font-size:8px;color:#880055;">200 RCW</span></button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join("")}
+    <div class="stitle" style="margin-top:8px;">🃏 МИНТ КАРТ</div>
+    ${[{e:"🟢",l:"Common",cost:"FREE",c:"#777"},{e:"🔵",l:"Rare",cost:"50 MDC",c:"#4488ff"},{e:"🟣",l:"Epic",cost:"100 RCW",c:"#cc44ff"},{e:"🟡",l:"Legendary",cost:"500 RCW",c:"#ffaa00"},{e:"🧙",l:"Wizard",cost:"1000 RCW",c:"#ff44cc"}].map(m=>`<div class="card" onclick="mintC('${m.l}','${m.cost}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-color:${m.c}22;background:linear-gradient(135deg,${m.c}08,#080808);"><span style="font-size:26px;filter:drop-shadow(0 0 8px ${m.c});">${m.e}</span><div style="flex:1;"><div style="color:${m.c};font-size:13px;font-weight:700;font-family:'Orbitron',monospace;">${m.l}</div></div><div style="background:${m.c}22;border:1px solid ${m.c}44;border-radius:8px;padding:6px 10px;color:${m.c};font-size:10px;font-weight:700;font-family:'Orbitron',monospace;">${m.cost}</div></div>`).join("")}
+  </div>`;
+}
+function healC(id){if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}cards[id].hp=Math.min(100,cards[id].hp+20);notif(`💊 ${M[cards[id].m].n} исцелена! -5 RCW`,"#cc44ff");render();}
+function boostC(id){if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}notif(`💥 ${M[cards[id].m].n} Reiki Blast +100%!`,"#ff44cc");}
+function mintC(l,cost){if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}notif(`🃏 ${l} заминтована! ${cost}`,"#4488ff");}
+
+// REIKI
+function rReiki(){
+  function blk(e,lbl,tier,tc,b2,boost,acts){
+    return `<div style="background:linear-gradient(135deg,${tc}0a,#080808);border:1px solid ${tc}44;border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 0 30px ${tc}0a;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:${tc}22;border:1px solid ${tc}44;display:flex;align-items:center;justify-content:center;font-size:26px;">${e}</div>
+          <div><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="color:${tc};font-weight:700;font-size:14px;font-family:'Orbitron',monospace;">${lbl}</span><span style="background:${tc}22;border:1px solid ${tc};border-radius:4px;padding:2px 7px;font-size:8px;color:${tc};font-weight:700;font-family:'Orbitron',monospace;">${tier}</span></div><div style="color:var(--muted);font-size:10px;">буст <span style="color:${tc};font-weight:700;">${boost}</span></div></div>
+        </div>
+        <div style="text-align:right;"><div style="color:${tc};font-size:22px;font-weight:900;font-family:'Orbitron',monospace;text-shadow:0 0 15px ${tc}66;">${b2}</div><div style="color:var(--muted);font-size:9px;">RCW</div></div>
+      </div>
+      ${acts.map(a=>`<div onclick="rcwA('${a.l}','${a.s}',${a.c},'${lbl}','${tc}')" style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;background:${tc}08;border:1px solid ${tc}22;border-radius:12px;margin-bottom:8px;cursor:pointer;" ontouchstart="this.style.background='${tc}1a'" ontouchend="this.style.background='${tc}08'"><div><div style="color:${tc};font-size:13px;font-weight:700;margin-bottom:3px;">${a.l}</div><div style="color:var(--muted);font-size:10px;">${a.s}</div></div><div style="background:${tc}22;border:1px solid ${tc}44;border-radius:8px;padding:6px 12px;color:${tc};font-weight:700;font-size:12px;font-family:'Orbitron',monospace;white-space:nowrap;">${a.c} RCW</div></div>`).join("")}
+    </div>`;
+  }
+  return `<div class="tc">
+    <div style="margin-bottom:18px;"><div class="gtitle" style="background:linear-gradient(90deg,#cc44ff,#ff44cc);">🔮 REIKI</div><div style="color:var(--muted);font-size:10px;letter-spacing:3px;font-family:'Orbitron',monospace;">DAILY TON · PREMIUM ETH</div></div>
+    ${blk("🔮","RCW TON","DAILY","#cc44ff",bal.RCW_T,"+30%",[{l:"💊 HEAL CARD",c:5,s:"Лечение +20% HP карты"},{l:"⚡ DAILY BOOST",c:20,s:"+30% power на 1 бой"},{l:"📋 DAILY QUEST",c:10,s:"Ежедневный квест +MDC"}])}
+    ${blk("🧙","RCW ETH","PREMIUM","#ff44cc",bal.RCW_E,"+100%",[{l:"🧙 WIZARD NFT",c:1000,s:"Легендарная карта +20%"},{l:"💥 REIKI BLAST",c:200,s:"+100% power на 1 бой"},{l:"👑 VIP ACCESS",c:500,s:"VIP турнир пул 10,000 MDC"}])}
+    <div style="background:linear-gradient(135deg,#1a0033,#33001a);border:1px solid #cc44ff33;border-radius:16px;padding:18px;"><div style="font-family:'Orbitron',monospace;font-weight:900;font-size:11px;letter-spacing:3px;margin-bottom:10px;">⚡ СИНЕРГИЯ</div><div style="color:#777;font-size:13px;line-height:2;"><span style="color:#cc44ff;font-weight:700;">TON +30%</span> × <span style="color:#ff44cc;font-weight:700;">ETH +100%</span> = <span style="color:#fff;font-weight:700;font-size:16px;">+230% 🚀</span></div></div>
+  </div>`;
+}
+function rcwA(l,s,c,chain,color){if(!wallet){notif("⚠ Подключи кошелёк!","#ff4444");return;}notif(`✨ ${l} — ${s}! -${c} RCW (${chain})`,color);}
+
+// PROFILE
+function rProfile(){
+  const wr=Math.round(PS.wins/(PS.wins+PS.losses)*100);
+  const xpPct=Math.round(PS.xp/PS.xpNext*100);
+  const ach=[{e:"🏆",n:"First Blood",desc:"Первая победа",done:true},{e:"🔥",n:"On Fire",desc:"5 побед подряд",done:true},{e:"🌍",n:"Landlord",desc:"Захват 5 зон",done:true},{e:"🧙",n:"Wizard",desc:"Купи Wizard NFT",done:false},{e:"💎",n:"Diamond Hands",desc:"1000 MDC в пуле",done:false},{e:"👑",n:"King of Memes",desc:"Достигни Lv.25",done:false}];
+  return `<div class="tc">
+    <div style="background:linear-gradient(135deg,#0f0f0f,#080808);border:1px solid #1e1e1e;border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;">
+      <div style="position:absolute;right:-10px;top:-10px;font-size:100px;opacity:0.04;">🪐</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div class="pring"><span>${PS.avatar}</span></div>
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;letter-spacing:2px;margin-bottom:4px;">${PS.name}</div>
+          <div style="color:#ff6b00;font-size:11px;font-weight:700;margin-bottom:6px;">${PS.title}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="background:#ff6b0022;border:1px solid #ff6b0044;border-radius:6px;padding:3px 8px;color:#ff6b00;font-size:10px;font-family:'Orbitron',monospace;font-weight:700;">LEVEL ${PS.level}</span>
+            <span style="background:#ffcc0011;border:1px solid #ffcc0033;border-radius:6px;padding:3px 8px;color:#ffcc00;font-size:10px;">🔥 ${PS.streak}W</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:10px;color:var(--muted);">XP</span><span style="font-size:10px;color:#ff6b00;">${PS.xp.toLocaleString()} / ${PS.xpNext.toLocaleString()}</span></div>
+      <div class="xpbar"><div class="xpfill" style="width:${xpPct}%;"></div></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:4px;text-align:right;">${(PS.xpNext-PS.xp).toLocaleString()} XP до Lv.${PS.level+1}</div>
+    </div>
+    <div class="stitle">⚔ СТАТИСТИКА</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+      ${[["ПОБЕДЫ",PS.wins,"#00ff88"],["ПОРАЖЕНИЯ",PS.losses,"#ff4444"],["WINRATE",wr+"%","#ffcc00"],["РЕЙТИНГ","#"+PS.rank,"#4488ff"],["MDC ЗАРАБОТАНО",PS.mdcEarned.toLocaleString(),"#ff6b00"],["МОИ ЗОНЫ",zones.filter(z=>z.owner==="YOU").length,"#00d4aa"]].map(([l,v,c])=>`<div class="sbox" style="border-color:${c}22;"><div style="font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:5px;">${l}</div><div style="font-size:16px;font-weight:900;color:${c};font-family:'Orbitron',monospace;">${v}</div></div>`).join("")}
+    </div>
+    <div class="stitle">💎 МОИ ТОКЕНЫ</div>
+    <div style="background:#0a0a0a;border:1px solid #1e1e1e;border-radius:14px;padding:14px;margin-bottom:14px;">
+      ${Object.entries(TK).map(([k,t])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #111;"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">${t.e}</span><div><div style="color:${t.c};font-size:12px;font-weight:700;">${t.n}</div><div style="color:var(--muted);font-size:9px;">${t.s}</div></div></div><div style="color:${t.c};font-size:16px;font-weight:700;font-family:'Orbitron',monospace;">${(bal[k]||0).toLocaleString()}</div></div>`).join("")}
+    </div>
+    <div class="stitle">🏆 ДОСТИЖЕНИЯ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${ach.map(a=>`<div style="background:${a.done?"linear-gradient(135deg,#0a1a0a,#080808)":"#080808"};border:1px solid ${a.done?"#00ff8833":"#1e1e1e"};border-radius:12px;padding:12px;opacity:${a.done?1:0.5};"><div style="font-size:24px;margin-bottom:5px;">${a.e}</div><div style="font-size:11px;color:${a.done?"#fff":"#555"};font-weight:700;margin-bottom:2px;">${a.n}</div><div style="font-size:9px;color:var(--muted);">${a.desc}</div><div style="font-size:9px;margin-top:4px;color:${a.done?"#00ff88":"#333"};">${a.done?"✓ ПОЛУЧЕНО":"🔒 ЗАБЛОКИРОВАНО"}</div></div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function render(){const fns={arena:rArena,kingdoms:rKingdoms,cards:rCards,reiki:rReiki,profile:rProfile};document.getElementById("content").innerHTML=(fns[tab]||rArena)();}
+document.querySelectorAll(".nb").forEach(b=>{const id=b.id.replace("nb-","");b.style.borderTop=id==="arena"?`2px solid ${NC[id]}`:"2px solid transparent";});
+render();
+</script>
+</body>
+</html>
